@@ -1,10 +1,11 @@
+\import Proofs
 -- 1. Define priorities of the functions f1, f2, f3, f4, f5 and f6 so that the function 'test' typechecks.
 
 \func f1 (x y : Nat) => x
-\func f2 : Nat => 0
-\func f3 (f : Nat -> Nat) (z : Nat) : Int => 0
-\func f4 : Nat => 0
-\func f5 => f1
+\func f2 => 0
+\func \infix 2 f3 (f : Nat -> Nat) (z : Nat) : Int => 0
+\func f4 => 0
+\func \infix 4 f5 => f1
 \func f6 => f4
 
 \func test => f1 f2 f3 f4 f5 f6
@@ -13,30 +14,61 @@
 --    and return the first element when b equals to true and the second one otherwise.
 
 \data Bool | true | false
+\func if (b : Bool) {A : \Type} (x y : A) : A \elim b | true => x | false => y
 
 -- 3. Define || via 'if'.
 
-\func \infixr 2 || (x y : Bool) : Bool => {?}
+\func \infixr 2 || (x y : Bool) : Bool => if x true y
 
 -- 4. Define the power and the factorial functions for natural numbers.
 
-\func \infixr 8 ^ (x y : Nat) => {?}
+\func \infixr 8 ^ (x y : Nat) : Nat \elim y | 0 => 1 | suc y' => x ^ y' Nat.* x
 
-\func fac (x : Nat) => {?}
+\func fac (x : Nat) : Nat \elim x | 0 => 1 | suc x => suc x Nat.* fac x
 
 -- 5. Define mod and gcd.
 
-\func mod (x y : Nat) => {?}
+\func mod (x y : Nat) : Nat => helper x x y \where
+  \func helper (fuel x y : Nat) : Nat \elim fuel
+    | 0 => 0
+    | suc f' => \case x Nat.- y \with {
+      | pos n => helper f' n y
+      | neg (suc n) => x
+    }
 
-\func gcd (x y : Nat) => {?}
+\func gcd (x y : Nat) : Nat => \case x Nat.- y \with {
+  | pos x => EuclidHelper x x y
+  | neg (suc x) => EuclidHelper y y (suc x)
+} \where
+  \func EuclidHelper (fuel x y : Nat) : Nat \elim fuel, y
+    | 0, _ => 0
+    | suc f', 0 => x
+    | suc f', y => EuclidHelper f' y (x Nat.mod y)
 
 -- 6. Define the map function.
 
 \data List (A : \Type) | nil | \infixr 5 :: A (List A)
 
-\func map {A B : \Type} (f : A -> B) (xs : List A) : List B => {?}
+\func map {A B : \Type} (f : A -> B) (xs : List A) : List B \elim xs
+  | nil => nil | a :: xs => f a :: map f xs
 
 -- 7. Define the transpose function.
 --    It takes a list of lists considered as a matrix and returns a list of lists which represents the transposed matrix.
 --    Example:
---    transpose ((1 :: 2 :: 3 :: nil) :: (4 :: 5 :: 6 :: nil)) == ((1 :: 4 :: nil) :: (2 :: 5 :: nil) :: (3 :: 6 :: nil))
+--    transpose ((1 :: 2 :: 3 :: nil) ::
+--               (4 :: 5 :: 6 :: nil)) ==
+--              ((1 :: 4 :: nil) ::
+--               (2 :: 5 :: nil) ::
+--               (3 :: 6 :: nil))
+
+\func zip {A B C : \Type} (f : A -> B -> C) (a : List A) (b : List B) : List C \elim a, b
+  | nil, _ => nil | _, nil => nil | a :: as, b :: bs => f a b :: zip f as bs
+
+\func cat {A : \Type} (a b : List A) : List A \elim a | nil => b | a :: as => a :: cat as b
+
+\func transposeRow {A : \Type} (a : List A) : List (List A) \elim a | nil => nil | a :: as => (a :: nil) :: transposeRow as
+
+\func transpose {A : \Type} (l : List (List A)) : List (List A) \elim l | nil => nil | l :: nil => transposeRow l | l :: ls => zip cat (transposeRow l) (transpose ls)
+
+\func test2 : transpose ((1 :: 2 :: 3 :: nil) :: (4 :: 5 :: 6 :: nil) :: (7 :: 8 :: 9 :: nil) :: nil) =
+              ((1 :: 4 :: 7 :: nil) :: (2 :: 5 :: 8 :: nil) :: (3 :: 6 :: 9 :: nil) :: nil) => idp
