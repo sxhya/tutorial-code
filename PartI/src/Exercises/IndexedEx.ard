@@ -122,4 +122,4 @@
   | suc n, Leaf => fzero
   | suc n, Node a t t1 => fsuc (max {suc n} (height n t) (height n t1))
 
-\func lol : height 3 (Node {Nat} {2} 0 (Leaf {Nat} {2}) (Leaf {Nat} {2}) ) = fsuc fzero => idp
+\func lol : height 3 (Node {Nat} {2} 0 (Node {Nat} {1} 0 (Leaf {Nat} {1}) (Leaf {Nat} {1})) (Leaf {Nat} {2}) ) = fsuc (fsuc fzero) => idp
