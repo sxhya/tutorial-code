@@ -25,9 +25,51 @@
 
 -- 2. Prove that 'vnil' is an identity for 'v++'.
 
-\func vnil-rightId {A : \Type} {n : Nat} (xs : Vec A n) : transport (Vec A) (+-comm 0 n) (xs v++ vnil) = xs => {?}
+\func vnil-rightId {A : \Type} {n : Nat} (xs : Vec A n) : transport (Vec A) (+-comm 0 n) (xs v++ vnil) = xs \elim n, xs
+  | 0, vnil => idp
+  | suc n, vcons a xs => v++-assoc.transport-vcons-comm {A} {0 + n} {n} (+-comm 0 n) a (xs v++ vnil) *> pmap (vcons a) (vnil-rightId {A} {n} xs)
 
 -- 3. Prove that all definitions of <= given in the module are equivalent.
+
+\func eq1to2 {n m : Nat} (p : LessOrEq n m) : LessOrEq' n m \elim n, m, p
+  | 0, m, z<=n => z<=n' idp
+  | suc n, suc m, s<=s p1 => \let q => eq1to2 p1 \in s<=s' idp idp q
+
+\func eq-suc {n m : Nat} (p : suc n = suc m) : n = m => inv (pred_suc n) *> pmap pred p *> pred_suc m \where {
+  \func pred (n : Nat) : Nat \with | 0 => 0 | 1 => 0 | suc n => n
+  \func pred_suc (n : Nat) : pred (suc n) = n \with | 0 => idp | suc n => idp
+}
+
+\func eq2to3 {n m : Nat} (p : LessOrEq' n m) : LessOrEq'' n m \elim n, m, p
+  | n, 0, z<=n' p => <=-refl p
+  | n, 0, s<=s' p p1 p2 => \case p1
+  | n, suc m, z<=n' p => <=-step (eq2to3 (z<=n' p))
+  | 0, suc m, s<=s' p p1 p2 => \case p
+  | suc n, suc (suc m), s<=s' {n'} {m'} p0 p1 p2 => \let A00 => transport (\lam n' => LessOrEq'' n' (suc m)) (inv (eq-suc p0)) (transport (\lam m' => LessOrEq'' n' m') (inv (eq-suc p1)) (eq2to3 p2)) \in \case A00 \with {
+    | <=-step l => <=-step {?}
+    | <=-refl p => <=-refl (pmap suc p)
+  }
+\func eq2to32 {n m : Nat} (p : LessOrEq' n m) : LessOrEq'' n m \elim n, m, p
+  | n, 0, z<=n' p => <=-refl p
+  | n, 0, s<=s' p p1 p2 => \case p1
+  | n, suc m, z<=n' p => <=-step (eq2to3 (z<=n' p))
+  | n, suc m, s<=s' {n'} {m'} p0 p1 p2 => \let q => inv (eq-suc p1) | A0 => eq2to32 p2 \in <=-step {?}
+
+-- n <=1 m => n <=2 m ...   => (n+1) <=2 (m+1)
+
+-- (suc n) <=2 (suc m) <-- (suc n) <= m
+-- n <=1 m -> n <=2 m
+--
+-- case 1 : n = m
+-- case 2 : (suc n) <= m -> by <=-step
+
+--\let q => eq2to3 p2 \in <=-step {?}
+-- <=-step : n <= (suc m) provided n <= m;
+-- need to prove (suc n) <= (sum m) (know: n <= m); but (suc n) <= m
+-- two cases: 1) n = m; 2) suc n <= m
+
+
+
 
 -- 4. Define the membership predicate 'In' for lists.
 
