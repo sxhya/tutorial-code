@@ -1,4 +1,5 @@
 \import EqualityProofs
+\import Exercises.BasicsEx
 
 -- 1. The operator 'J' has a different form, which we denote 'Jalt'. Prove that 'J' and 'Jalt' are equivalent, i.e.
 -- define 'J' in terms of 'Jalt' and vice versa.
@@ -40,58 +41,87 @@
   \func pred_suc (n : Nat) : pred (suc n) = n \with | 0 => idp | suc n => idp
 }
 
+\func LessOrEq''_suc {n m  : Nat} (p : LessOrEq'' n m) : LessOrEq'' (suc n) (suc m) \elim n, m, p
+  | n, suc m, <=-step p => <=-step (LessOrEq''_suc p)
+  | n, m, <=-refl p => <=-refl (pmap suc p)
+
 \func eq2to3 {n m : Nat} (p : LessOrEq' n m) : LessOrEq'' n m \elim n, m, p
   | n, 0, z<=n' p => <=-refl p
-  | n, 0, s<=s' p p1 p2 => \case p1
+  | n, 0, s<=s' p p1 _ => \case p1
   | n, suc m, z<=n' p => <=-step (eq2to3 (z<=n' p))
-  | 0, suc m, s<=s' p p1 p2 => \case p
-  | suc n, suc (suc m), s<=s' {n'} {m'} p0 p1 p2 => \let A00 => transport (\lam n' => LessOrEq'' n' (suc m)) (inv (eq-suc p0)) (transport (\lam m' => LessOrEq'' n' m') (inv (eq-suc p1)) (eq2to3 p2)) \in \case A00 \with {
-    | <=-step l => <=-step {?}
+  | 0, suc m, s<=s' p _ _ => \case p
+  | suc n, suc (suc m), s<=s' {n'} {m'} p0 p1 p2 =>
+    \case transport (\lam n' => LessOrEq'' n' (suc m)) (inv (eq-suc p0))
+              (transport (\lam m' => LessOrEq'' n' m') (inv (eq-suc p1)) (eq2to3 p2)) \with {
+    | <=-step l => <=-step (LessOrEq''_suc l)
     | <=-refl p => <=-refl (pmap suc p)
   }
-\func eq2to32 {n m : Nat} (p : LessOrEq' n m) : LessOrEq'' n m \elim n, m, p
-  | n, 0, z<=n' p => <=-refl p
-  | n, 0, s<=s' p p1 p2 => \case p1
-  | n, suc m, z<=n' p => <=-step (eq2to3 (z<=n' p))
-  | n, suc m, s<=s' {n'} {m'} p0 p1 p2 => \let q => inv (eq-suc p1) | A0 => eq2to32 p2 \in <=-step {?}
+  | suc n, 1, s<=s' {n'} p p1 p2 => \case transport (\lam m => LessOrEq'' n' m) (inv (eq-suc p1)) (eq2to3 p2) \with {
+    | <=-refl p3 => <=-refl (pmap suc (eq-suc p *> p3))
+  }
 
--- n <=1 m => n <=2 m ...   => (n+1) <=2 (m+1)
+\func +-suc-comm {n m : Nat} : suc n + m = suc (n + m) \elim m | 0 => idp | suc m => pmap suc +-suc-comm
 
--- (suc n) <=2 (suc m) <-- (suc n) <= m
--- n <=1 m -> n <=2 m
---
--- case 1 : n = m
--- case 2 : (suc n) <= m -> by <=-step
+\func eq3to4 {n m : Nat} (p : LessOrEq'' n m) : LessOrEq''' n m \elim m, p
+  | suc m, <=-step p => \let q => eq3to4 p \in (suc q.1, +-suc-comm *> pmap suc q.2)
+  | m, <=-refl p => (0, inv (+-comm n 0) *> p)
 
---\let q => eq2to3 p2 \in <=-step {?}
--- <=-step : n <= (suc m) provided n <= m;
--- need to prove (suc n) <= (sum m) (know: n <= m); but (suc n) <= m
--- two cases: 1) n = m; 2) suc n <= m
+\func eq4to5 {n m : Nat} (p : LessOrEq''' n m) : lessOrEq n m
+  | {0}, {_}, p => unit
+  | {suc n}, {0}, p => \case p.2
+  | {suc n}, {suc m}, p => eq4to5 (p.1, eq-suc p.2)
 
-
-
+\func eq5to1 {n m : Nat} (p : lessOrEq n m): LessOrEq n m
+  | {0}, {0}, unit => z<=n
+  | {0}, {suc m}, unit => z<=n
+  | {suc n}, {suc m}, p => s<=s (eq5to1 p)
 
 -- 4. Define the membership predicate 'In' for lists.
 
 \data List (A : \Type) | nil | cons A (List A)
 
-\data In {A : \Type} (a : A) (xs : List A)
+\data In {A : \Type} (a : A) (xs : List A) \elim xs
+  | cons b xs => here (a = b)
+  | cons b xs => there (In a xs)
 
 -- 5. Define reflexive and transitive closure of a relation.
 --    That is 'ReflTransClosure R' -- is the minimal reflexive and transitive relation containing R.
 
 \data ReflTransClosure {A : \Type} (R : A -> A -> \Type) (x y : A)
+  | old (R x y)
+  | refl (x = y)
+  | trans (z : A) (R x z) (R z y)
 
 -- 6. Prove that if 'R' is already reflexive and transitive then 'ReflTransClosure R' is equivalent to 'R'.
 
 \func \infix 4 <-> {A : \Type} (P Q : A -> A -> \Type) => \Pi (x y : A) -> \Sigma (P x y -> Q x y) (Q x y -> P x y)
 
-\func ReflTransClosure-lem {A : \Type} (R : A -> A -> \Type) (refl : \Pi (x : A) -> R x x) (trans : \Pi (x y z : A) -> R x y -> R y z -> R x z) : R <-> ReflTransClosure R => {?}
+\func ReflTransClosure-lem {A : \Type} (R : A -> A -> \Type) (refl : \Pi (x : A) -> R x x) (trans : \Pi (x y z : A) -> R x y -> R y z -> R x z) : R <-> ReflTransClosure R => \lam x y =>
+    (old, \lam q => \case q \with {
+      | old r => r
+      | ReflTransClosure.refl p => transport (\lam y => R x y) p (refl x)
+      | ReflTransClosure.trans z r r1 => trans x z y r r1
+    })
 
 -- 7. Define the predicate xs <= ys for lists, which says "the list xs is a sublist of ys".
 
+\data SubList {A : \Type} (xs : List A) (ys : List A) \elim xs, ys
+  | nil, ys => EmptySublist
+  | xs, cons b ys => SkipSubList (SubList xs ys)
+  | cons a xs, cons b ys => TakeSublist (a = b) (SubList xs ys)
+
+\func filter {A : \Type} (P : A -> Bool) (xs : List A) : List A \elim xs
+  | nil => nil
+  | cons a xs => if (P a) (cons a (filter P xs)) (filter P xs)
+
 -- 8. Prove that 'filter xs <= xs' for any list xs.
 
+\func filterIsASublist {A : \Type} {P : A -> Bool} (xs : List A) : SubList (filter P xs) xs \elim xs
+  | nil => EmptySublist
+  | cons a xs => \case P a \as pa \return SubList (if pa (cons a (filter P xs)) (filter P xs)) (cons a xs) \with {
+    | true => TakeSublist idp (filterIsASublist xs)
+    | false => SkipSubList (filterIsASublist xs)
+  }
 
 
 
