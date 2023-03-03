@@ -1,9 +1,8 @@
+\import Basics
 
 -------------------------------------------------
 -- Filter via \case and via helper
 -------------------------------------------------
-
-\data Bool | false | true
 
 \data List (A : \Type) | nil | cons A (List A)
 
@@ -157,13 +156,13 @@
 -- Views
 -------------------------------------------------
 
-\func \infixl 6 + (x y : Nat) : Nat \elim y
+{- \func \infixl 6 + (x y : Nat) : Nat \elim y
   | 0 => x
   | suc y => suc (x + y)
 
 \func \infixl 7 * (x y : Nat) : Nat \elim y
   | 0 => 0
-  | suc y => x * y + x
+  | suc y => x * y + x -}
 
 \data Parity (n : Nat)
   | even (k : Nat) (p : n = 2 * k)

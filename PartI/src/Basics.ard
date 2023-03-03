@@ -98,9 +98,9 @@
    not False = True
 -}
 
-\func if (x : Bool) (t e : Nat) : Nat \elim x
+{- \func if (x : Bool) (t e : Nat) : Nat \elim x
   | true => t
-  | false => e
+  | false => e -}
 {- Haskell:
    if :: Bool -> Nat -> Nat -> Nat
    if True t e = t

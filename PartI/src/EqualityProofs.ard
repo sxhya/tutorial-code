@@ -1,3 +1,4 @@
+\import Basics(+)
 
 -------------------------------------------------
 -- Commutativity of +
@@ -23,15 +24,15 @@
 \func pmap {A B : \Type} (f : A -> B) {a a' : A} (p : a = a') : f a = f a'
   => transport (\lam x => f a = f x) p idp
 
-\func \infixl 6 + (x y : Nat) : Nat \elim y
+{-\func \infixl 6 + (x y : Nat) : Nat \elim y
   | 0 => x
-  | suc y => suc (x + y)
+  | suc y => suc (x + y) -}
 
-\func +-comm (n m : Nat) : n + m = m + n
-  | 0, 0 => idp
-  | suc n, 0 => pmap suc (+-comm n 0)
-  | 0, suc m => pmap suc (+-comm 0 m)
-  | suc n, suc m => pmap suc (+-comm (suc n) m *> pmap suc (inv (+-comm n m)) *> +-comm n (suc m))
+\func +-comm {n m : Nat} : n + m = m + n
+  | {0}, {0} => idp
+  | {suc n}, {0} => pmap suc (+-comm {n} {0})
+  | {0}, {suc m} => pmap suc (+-comm {0} {m})
+  | {suc n}, {suc m} => pmap suc (+-comm {suc n} {m} *> pmap suc (inv (+-comm {n} {m})) *> +-comm {n} {suc m})
 
 -------------------------------------------------
 -- Equational reasoning, proof of +-comm rewritten

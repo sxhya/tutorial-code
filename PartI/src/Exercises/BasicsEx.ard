@@ -1,4 +1,4 @@
-\import Proofs
+\import Basics
 -- 1. Define priorities of the functions f1, f2, f3, f4, f5 and f6 so that the function 'test' typechecks.
 
 \func f1 (x y : Nat) => x
@@ -13,7 +13,7 @@
 -- 2. Define in Arend the function 'if', which takes a boolean value b and two elements of an arbitrary type A
 --    and return the first element when b equals to true and the second one otherwise.
 
-\data Bool | true | false
+{- \data Bool | true | false -}
 \func if (b : Bool) {A : \Type} (x y : A) : A \elim b | true => x | false => y
 
 -- 3. Define || via 'if'.

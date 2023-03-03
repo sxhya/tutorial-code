@@ -1,4 +1,11 @@
+\import Basics (*, +, Bool)
 \import Case
+\import EqualityProofs (+-assoc, +-comm)
+\import Exercises.BasicsEx (if)
+\import Function.Meta
+\import Meta
+\import Paths (*>)
+\import Paths.Meta
 
 -- 1. Implement any sorting algorithm using \case for pattern matching on the result of comparison of elements
 -- of a list.
@@ -6,9 +13,16 @@
 -- 2. Define 'filter' via 'if' not using \case.
 --    Prove the lemma 'filter-lem' for this version of 'filter'.
 
-\func filter' {A : \Type} (p : A -> Bool) (xs : List A) : List A => {?}
+\func filter' {A : \Type} (p : A -> Bool) (xs : List A) : List A \elim xs
+  | nil => nil
+  | cons a xs => if (p a) (cons a (filter' p xs)) (filter' p xs)
 
-\func filter-lem {A : \Type} (p : A -> Bool) (xs : List A) : length (filter' p xs) <= length xs => {?}
+\func filter-lem {A : \Type} (p : A -> Bool) (xs : List A) : length (filter' p xs) <= length xs \elim xs
+  | nil => unit
+  | cons a xs => \let IH => filter-lem p xs \in \case p a \as pa \return length (if pa (cons a (filter' p xs)) (filter' p xs)) <= length (cons a xs) \with {
+    | false => <=-helper IH
+    | true => IH
+  }
 
 -- 3. Prove that, for every function f : Bool -> Bool and every x : Bool, it is true that f (f (f x)) = f x.
 
@@ -20,7 +34,37 @@
 \data ModView (m n : Nat)
   | quot-rem (q r : Nat) (t : T (r < m)) (p : n = q * m + r)
 
-\func mod-view (m n : Nat) (t : T (0 < m)) : ModView m n => {?}
+\func mod-view (m n : Nat) (t : T (0 < m)) : ModView m n \elim n
+  | 0 => quot-rem 0 0 t (inv Lemma2)
+  | suc n => \case mod-view m n t \with {
+    | quot-rem q1 r1 t1 p => \case totality (suc r1) m \with {
+      | LT t1 => quot-rem q1 (suc r1) t1 (pmap suc p)
+      | EQ p1 => quot-rem (suc q1) 0 t (pmap suc p *> pmap (+ (q1 * m)) p1 *> inv Lemma3)
+      | GT t0 => absurd (Lemma1 t1 t0)
+    }
+  } \where {
+  \data cmpData (m n : Nat) | LT (T (m < n)) | EQ (m = n) | GT (T (n < m))
+
+  \func totality (m n : Nat) : cmpData m n
+    | 0, 0 => EQ idp | 0, suc n => LT unit | suc m, 0 => GT unit
+    | suc m, suc n => \let IH => totality m n \in \case IH \with {
+      | LT t => LT t | EQ p => EQ (pmap suc p) | GT t => GT t
+    }
+
+  \func Lemma0 {n : Nat}: T (n < 0) -> Empty | {0} => \lam x => x | {suc n} => \lam x => x
+
+  \func Lemma1 {m n : Nat}: T (m < n) -> (T (n < suc m)) -> Empty
+    | {0}, {0} => \lam x y => x
+    | {suc m}, {0} => \lam x y => x
+    | {0}, {suc n} => \lam x y => Lemma0 y
+    | {suc m}, {suc n} => \lam x y => Lemma1 x y
+
+  \func Lemma2 {m : Nat}: 0 * m = 0 | {0} => idp | {suc m} => Lemma2
+
+  \lemma Lemma3 {m n : Nat} : suc m * n = m * n + n \elim n
+    | 0 => idp
+    | suc n => pmap suc $ later $ rewrite (Lemma3 {m} {n}) (rewrite (+-assoc, +-assoc, +-comm {m} {n}) idp)
+}
 
 \func div (n m : Nat) (t : T (0 < m)) : Nat => {?}
 

@@ -1,5 +1,6 @@
 \import EqualityProofs
 \import Exercises.BasicsEx
+\import Basics(+, Bool)
 
 -- 1. The operator 'J' has a different form, which we denote 'Jalt'. Prove that 'J' and 'Jalt' are equivalent, i.e.
 -- define 'J' in terms of 'Jalt' and vice versa.
@@ -26,9 +27,9 @@
 
 -- 2. Prove that 'vnil' is an identity for 'v++'.
 
-\func vnil-rightId {A : \Type} {n : Nat} (xs : Vec A n) : transport (Vec A) (+-comm 0 n) (xs v++ vnil) = xs \elim n, xs
+\func vnil-rightId {A : \Type} {n : Nat} (xs : Vec A n) : transport (Vec A) (+-comm {0} {n}) (xs v++ vnil) = xs \elim n, xs
   | 0, vnil => idp
-  | suc n, vcons a xs => v++-assoc.transport-vcons-comm {A} {0 + n} {n} (+-comm 0 n) a (xs v++ vnil) *> pmap (vcons a) (vnil-rightId {A} {n} xs)
+  | suc n, vcons a xs => v++-assoc.transport-vcons-comm {A} {0 + n} {n} (+-comm {0} {n}) a (xs v++ vnil) *> pmap (vcons a) (vnil-rightId {A} {n} xs)
 
 -- 3. Prove that all definitions of <= given in the module are equivalent.
 
@@ -64,7 +65,7 @@
 
 \func eq3to4 {n m : Nat} (p : LessOrEq'' n m) : LessOrEq''' n m \elim m, p
   | suc m, <=-step p => \let q => eq3to4 p \in (suc q.1, +-suc-comm *> pmap suc q.2)
-  | m, <=-refl p => (0, inv (+-comm n 0) *> p)
+  | m, <=-refl p => (0, inv (+-comm {n} {0}) *> p)
 
 \func eq4to5 {n m : Nat} (p : LessOrEq''' n m) : lessOrEq n m
   | {0}, {_}, p => unit
@@ -122,9 +123,6 @@
     | true => TakeSublist idp (filterIsASublist xs)
     | false => SkipSubList (filterIsASublist xs)
   }
-
-
-
 
 
 
