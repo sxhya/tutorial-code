@@ -1,4 +1,4 @@
-\import Basics(+)
+\open Nat(+)
 
 -------------------------------------------------
 -- Commutativity of +

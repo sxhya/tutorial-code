@@ -1,14 +1,27 @@
-\import Basics (*, +, Bool)
+\import Basics (Bool, true, false)
 \import Case
 \import EqualityProofs (+-assoc, +-comm)
 \import Exercises.BasicsEx (if)
+\import Exercises.EqualityProofsEx (eq-suc)
 \import Function.Meta
 \import Meta
 \import Paths (*>)
 \import Paths.Meta
+\open Nat(+, *)
 
 -- 1. Implement any sorting algorithm using \case for pattern matching on the result of comparison of elements
 -- of a list.
+
+\func insert (x : Nat) (b : List Nat) : List Nat \elim b
+  | nil => cons x nil
+  | cons y bs => \case y < x \with {
+    | true => cons y (insert x bs)
+    | false =>  cons x (cons y bs)
+  }
+
+\func insertSort (a : List Nat) : List Nat \elim a
+  | nil => nil
+  | cons x as => insert x (insertSort as)
 
 -- 2. Define 'filter' via 'if' not using \case.
 --    Prove the lemma 'filter-lem' for this version of 'filter'.
@@ -19,14 +32,24 @@
 
 \func filter-lem {A : \Type} (p : A -> Bool) (xs : List A) : length (filter' p xs) <= length xs \elim xs
   | nil => unit
-  | cons a xs => \let IH => filter-lem p xs \in \case p a \as pa \return length (if pa (cons a (filter' p xs)) (filter' p xs)) <= length (cons a xs) \with {
-    | false => <=-helper IH
-    | true => IH
+  | cons a xs => \case p a \as pa \return length (if pa (cons a (filter' p xs)) (filter' p xs)) <= length (cons a xs) \with {
+    | false => <=-helper (filter-lem p xs)
+    | true => filter-lem p xs
   }
 
 -- 3. Prove that, for every function f : Bool -> Bool and every x : Bool, it is true that f (f (f x)) = f x.
 
-\func Bool-lem (f : Bool -> Bool) (x : Bool) : f (f (f x)) = f x => {?}
+\func Bool-lem (f : Bool -> Bool) (x : Bool) : f (f (f x)) = f x =>
+  \let A0 => \case f true \as ft, f false \as ff, x \as x \return (f true = ft -> f false = ff -> f (f (f x)) = f x) \with {
+    | false, false, false => \lam A0 A1 => rewrite (A1, A1, A1) idp
+    | false, false, true => \lam A0 A1 => rewrite (A0, A1, A1) idp
+    | false, true, false => \lam A0 A1 => rewrite (A1, A0, A1) idp
+    | false, true, true => \lam A0 A1 => rewrite (A0, A1, A0) idp
+    | true, false, false => \lam A0 A1 => rewrite (A1, A1, A1) idp
+    | true, false, true => \lam A0 A1 => rewrite (A0, A0, A0) idp
+    | true, true, false => \lam A0 A1 => rewrite (A1, A0, A0) idp
+    | true, true, true => \lam A0 A1 => rewrite (A0, A0, A0) idp
+  } \in A0 idp idp
 
 -- 4. Define the view, which represents a natural number as a pair of the quotient and the remainder of
 -- division by a positive 'm'. Implement the division function.
@@ -66,18 +89,47 @@
     | suc n => pmap suc $ later $ rewrite (Lemma3 {m} {n}) (rewrite (+-assoc, +-assoc, +-comm {m} {n}) idp)
 }
 
-\func div (n m : Nat) (t : T (0 < m)) : Nat => {?}
+\func div (n m : Nat) (t : T (0 < m)) : Nat => \case mod-view m n t \with {
+  | quot-rem q r A0 A1 => q
+}
 
 -- 5. Prove that the predicate 'isEven' is decidable.
 
 \func isEven (n : Nat) => \Sigma (k : Nat) (n = 2 * k)
 
-\func isEven-dec : DecPred isEven => {?}
+\func isEven-dec : DecPred isEven => \lam n => \case mod-view 2 n unit \with {
+  | quot-rem q r A0 A1 => \case r \as r, A0 : T (r < 2), A1 : n = 0 + q + q + r \with {
+    | 0, t, s => yes (q, rewrite (inv Lemma0) s)
+    | 1, t, s => no (\lam (q1, A) => Lemma1 (inv A *> s))
+    | suc (suc r1), t, _ => absurd (mod-view.Lemma0 t)
+  }
+} \where {
+  \func Lemma0 {q : Nat}: q + q = 2 * q \elim q
+    | 0 => idp
+    | suc q => rewrite (inv Lemma0) idp
+
+  \func Lemma1 {q q2 : Nat} (A : 2 * q = suc (q2 + q2)) : Empty \elim q, q2
+    | 0, 0 => \case A
+    | 0, suc q2 => \case A
+    | suc q, 0 => \case A
+    | suc q, suc q2 => Lemma1 (eq-suc (eq-suc A))
+}
 
 -- 6. Prove that if equality of elements of a type 'A' is decidable, then equality of elements if 'List A' is also decidable.
 
 \instance ListEq {A : \Type} (dec : Eq A) : Eq (List A)
-  | decideEq => {?}
+  | decideEq l1 l2 => decideEq dec l1 l2 \where {
+  \func decideEq {A : \Type} (dec : Eq A) (l1 l2 : List A) : Decide (l1 = l2) \elim l1, l2
+    | nil, nil => yes idp
+    | nil, cons a l => no (\lam A => \case A)
+    | cons a l, nil => no (\lam A => \case A)
+    | cons a ls1, cons a1 ls2 => \case decideEq dec ls1 ls2, dec.decideEq a a1 \with {
+      | yes a2, yes a3 => yes (rewrite (a2, a3) idp)
+      | _, no _x => no (\lam A1 => {?})
+      | no _x, _ => no (\lam A2 => {?})
+    }
+}
+
 
 -- 7. Prove that if equality of elements of a type 'A' is decidable, then every list of elements of 'A' is either empty,
 -- consists of repetitions of one element or there exist two different elements in 'A'.

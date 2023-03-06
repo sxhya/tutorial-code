@@ -1,3 +1,4 @@
+\import Exercises.BasicsEx
 \open Nat
 
 -------------------------------------------------
@@ -126,9 +127,9 @@
 -- there is no limit on the size of numbers
 \func bigNumber => 1000000000000000000000000
 
-\func \infixl 6 + (x y : Nat) : Nat \elim y
+{- \func \infixl 6 + (x y : Nat) : Nat \elim y
   | 0 => x
-  | suc y => suc (x + y)
+  | suc y => suc (x + y) -}
 {- Haskell:
    (+) :: Nat -> Nat -> Nat
    x + Zero = x
@@ -140,9 +141,10 @@
 -- This behaviour depends on the definition of +, namely,
 -- the argument chosen for pattern matching.
 
-\func \infixl 7 * (x y : Nat) : Nat \elim y
+{- \func \infixl 7 * (x y : Nat) : Nat \elim y
   | 0 => 0
-  | suc y => x * y + x
+  | suc y => x * y + x -}
+
 {- Haskell:
    (*) :: Nat -> Nat -> Nat
    x * Zero = 0

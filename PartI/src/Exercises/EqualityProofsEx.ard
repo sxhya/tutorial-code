@@ -1,6 +1,7 @@
 \import EqualityProofs
 \import Exercises.BasicsEx
-\import Basics(+, Bool)
+\import Basics(Bool)
+\open Nat(+)
 
 -- 1. The operator 'J' has a different form, which we denote 'Jalt'. Prove that 'J' and 'Jalt' are equivalent, i.e.
 -- define 'J' in terms of 'Jalt' and vice versa.
