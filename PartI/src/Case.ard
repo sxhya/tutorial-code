@@ -1,4 +1,5 @@
 \import Basics
+\open Nat(+, *)
 
 -------------------------------------------------
 -- Filter via \case and via helper
@@ -257,9 +258,9 @@
     | false => no (\lam x => x)
   })
 
+
 \func FromDecToBool {A : \Type} (P : \Sigma (P : A -> \Type) (DecPred P)) : A -> Bool
   => \lam a => \case P.2 a \with {
     | yes _ => true
     | no _ => false
   }
-

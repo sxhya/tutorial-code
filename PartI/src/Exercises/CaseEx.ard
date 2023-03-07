@@ -1,5 +1,6 @@
 \import Basics (Bool, true, false)
 \import Case
+\import Equality (funExt)
 \import EqualityProofs (+-assoc, +-comm)
 \import Exercises.BasicsEx (if)
 \import Exercises.EqualityProofsEx (eq-suc)
@@ -125,11 +126,10 @@
     | cons a l, nil => no (\lam A => \case A)
     | cons a ls1, cons a1 ls2 => \case decideEq dec ls1 ls2, dec.decideEq a a1 \with {
       | yes a2, yes a3 => yes (rewrite (a2, a3) idp)
-      | _, no _x => no (\lam A1 => {?})
-      | no _x, _ => no (\lam A2 => {?})
+      | _, no a3 => no (\lam A => a3 (pmap (\lam l => \case l \with { nil => a | cons y ys => y}) A))
+      | no a2, _ => no (\lam A => a2 (pmap (\lam l => \case l \with { nil => nil | cons y ys => ys}) A))
     }
 }
-
 
 -- 7. Prove that if equality of elements of a type 'A' is decidable, then every list of elements of 'A' is either empty,
 -- consists of repetitions of one element or there exist two different elements in 'A'.
@@ -143,11 +143,24 @@
   | repeated (n : Nat) (a : A) (p : xs = repeat n a)
   | A-is-not-trivial (a a' : A) (p : a = a' -> Empty)
 
-\func lemma {A : \Type} (xs : List A) {dec : DecEq A} : Result A xs => {?}
+\func lemma {A : \Type} (xs : List A) {dec : DecEq A} : Result A xs \elim xs
+  | nil => empty idp
+  | cons a xs => \case lemma xs {dec} \with {
+    | empty p => repeated 1 a (rewrite p idp)
+    | repeated n a1 p => \case dec a a1 \with {
+      | yes a2 => repeated (suc n) a1 (rewrite (p, a2) idp)
+      | no a2 => A-is-not-trivial a a1 a2
+    }
+    | A-is-not-trivial a1 a2 p => A-is-not-trivial a1 a2 p
+  }
 
 -- 8. Prove that the functions 'FromBoolToDec' and 'FromDecToBool' are inverse to each other.
 
-\func bdb {A : \Type} (p : A -> Bool) : FromDecToBool (FromBoolToDec p) = p => {?}
+\func bdb {A : \Type} (p : A -> Bool) : FromDecToBool (FromBoolToDec p) = p =>
+  funExt {A} (\lam (a : A) => Bool) {FromDecToBool (FromBoolToDec p)} {p} (\lam a => \case p a \as a1, idp : p a = a1 \with {
+    | false, X => unfold (FromDecToBool, FromBoolToDec) (rewrite X idp)
+    | true, X  => unfold (FromDecToBool, FromBoolToDec) (rewrite X idp)
+  })
 
 -- We cannot prove that 'FromBoolToDec (FromDecToBool P) = P', but we can prove a weaker statement:
 -- these predicates are logically equivalent.
@@ -155,4 +168,6 @@
 -- Equivalence of predicates
 \func \infix 4 <-> {A : \Type} (P Q : A -> \Type) => \Pi (x : A) -> \Sigma (P x -> Q x) (Q x -> P x)
 
-\func dbd {A : \Type} (P : \Sigma (P : A -> \Type) (DecPred P)) : (FromBoolToDec (FromDecToBool P)).1 <-> P.1 => {?}
+\func dbd {A : \Type} (P : \Sigma (P : A -> \Type) (DecPred P)) : (FromBoolToDec (FromDecToBool P)).1 <-> P.1 =>
+  \lam x => unfold (FromDecToBool, FromBoolToDec) (\case P.2 x \as p2x, idp : P.2 x = p2x \with { | yes a, X => rewrite X (\lam _ => a) | no a, X => rewrite X (\lam e => absurd e) },
+                                                   \case P.2 x \as p2x, idp : P.2 x = p2x \with { | yes a, X => rewrite X (\lam _ => unit) | no a, X => rewrite X a})
