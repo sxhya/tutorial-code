@@ -1,4 +1,7 @@
+\import Equality (funExt)
+\import EqualityProofs (inv)
 \import Exercises.BasicsEx
+\import Indexed (pmap)
 \import Meta
 \import Paths.Meta
 \import Records
@@ -52,13 +55,14 @@
 \class Monad \extends Functor {
   | return {A : \Type} : A -> Functor.F A
   | \infix 9 >>= {A B : \Type} (Functor.F A) (A -> Functor.F B) : Functor.F B
-  | return-left-identity {A B : \Type} {a : A} {f : A -> Functor.F B} : return a >>= f = f a
+  | return-left-identity {A B : \Type} (a : A) (f : A -> Functor.F B) : return a >>= f = f a
   | return-right-identity {A : \Type} {ma : Functor.F A} : ma >>= return = ma
   | bind-assoc {A B C : \Type} (ma : Functor.F A) (f : A -> Functor.F B) (g : B -> Functor.F C) :
       ma >>= (\lam x => f x >>= g) = (ma >>= f) >>= g
   | fmap {A} {B} f a' => a' >>= (\lam a => return (f a))
   | fmap-id => \lam y => unfold fmap return-right-identity
-  | fmap-comp f g y => unfold fmap (\let X => bind-assoc y (\lam a => return (f a)) (\lam a => return (g a)) \in rewriteI X ( {?} ))
+  | fmap-comp {A} {B} {C} f g y => unfold fmap (\let X => bind-assoc y (\lam a => return (f a)) (\lam a => return (g a)) \in rewriteI X ( pmap (\lam x => y >>= x)
+      (funExt (\lam _ => Functor.F C) (\lam a => inv (return-left-identity (f a) (\lam y => return (g y)))))))
 }
 
 \instance MaybeMonad : Monad \cowith
@@ -68,12 +72,15 @@
     | nothing => nothing
     | just a => f a
   }
-  | return-left-identity => idp
+  | return-left-identity a f => idp
   | return-right-identity {A} {ma} => \case ma \as ma \return (\case ma \with { | nothing => nothing {A} | just a => just {A} a }) = ma \with {
     | nothing => idp
     | just a => idp
   }
-  | bind-assoc ma f g => {?}
+  | bind-assoc {A} {B} {C} ma f g => \case ma \as x, idp : ma = x \return ma >>= {\this} (\lam x => f x >>= {\this} g) = (ma >>= {\this} f) >>= {\this} g \with {
+    | nothing, X => rewrite X idp
+    | just a, X => rewrite X idp
+  }
 
 -- 6. Define instances for the class of monads for 'State' and 'State''.
 
