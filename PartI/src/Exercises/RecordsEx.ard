@@ -64,23 +64,13 @@
   | fmap-comp {A} {B} {C} f g y => unfold fmap (\let X => bind-assoc y (\lam a => return (f a)) (\lam a => return (g a)) \in rewriteI X ( pmap (\lam x => y >>= x)
       (funExt (\lam _ => Functor.F C) (\lam a => inv (return-left-identity (f a) (\lam y => return (g y)))))))
 }
-
 \instance MaybeMonad : Monad \cowith
   | F => \lam x => Maybe x
   | return {A} => \lam (a : A) => just {A} a
-  | >>= ma f => \case ma \with {
-    | nothing => nothing
-    | just a => f a
-  }
+  | >>= ma f => \case ma \with { nothing => nothing | just a => f a }
   | return-left-identity a f => idp
-  | return-right-identity {A} {ma} => \case ma \as ma \return (\case ma \with { | nothing => nothing {A} | just a => just {A} a }) = ma \with {
-    | nothing => idp
-    | just a => idp
-  }
-  | bind-assoc {A} {B} {C} ma f g => \case ma \as x, idp : ma = x \return ma >>= {\this} (\lam x => f x >>= {\this} g) = (ma >>= {\this} f) >>= {\this} g \with {
-    | nothing, X => rewrite X idp
-    | just a, X => rewrite X idp
-  }
+  | return-right-identity {A} {ma} => \case \elim ma \with { nothing => idp | just a => idp }
+  | bind-assoc {A} {B} {C} ma f g => \case \elim ma \with { nothing => idp | just a => idp }
 
 -- 6. Define instances for the class of monads for 'State' and 'State''.
 
@@ -89,3 +79,11 @@
 
 \data State' (S A : \Type)
   | state' (S -> \Sigma S A)
+
+\instance StateMonad {S : \Type} : Monad \cowith
+  | F A => State S A
+  | return a => \new State { | state s => (s, a) }
+  | >>= sa f => \new State { | state s => \let (s', v) => state {sa} s | nS => f v \in state {nS} s' }
+  | return-left-identity {A} {B} a f => ext (funExt (\lam _ => _) (\lam a1 => idp))
+  | return-right-identity {A} {ma} => ext (funExt (\lam _ => _) (\lam a1 => idp))
+  | bind-assoc {A} {B} {C} ma f g => ext (funExt (\lam _ => _) (\lam a1 => idp))
