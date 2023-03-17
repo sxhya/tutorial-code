@@ -1,3 +1,4 @@
+\import Indexed
 \open Nat(+)
 
 -------------------------------------------------
@@ -123,9 +124,9 @@
 -- Definition of <= via equality.
 \func LessOrEq''' (n m : Nat) => \Sigma (k : Nat) (k + n = m)
 
-\data Empty
+-- \data Empty
 
-\data Unit | unit
+-- \data Unit | unit
 
 -- Recursive definition of <=.
 \func lessOrEq (n m : Nat) : \Type

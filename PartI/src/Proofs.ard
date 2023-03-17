@@ -1,10 +1,12 @@
+\import Basics (Bool, false, true)
+\import Indexed
 -------------------------------------------------
 -- Curry-Howard correspondence
 -------------------------------------------------
 
-\data Empty
+--\data Empty
 
-\data Unit | unit
+--\data Unit | unit
 
 \func absurd {A : \Type} (e : Empty) : A
 -- There are no patterns since Empty does not have constructors.
@@ -49,7 +51,7 @@
 -- Examples of propositions and proofs
 -------------------------------------------------
 
-\data Bool | true | false
+-- \data Bool | true | false
 
 \func T (b : Bool) : \Type
   | true => Unit

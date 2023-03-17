@@ -5,9 +5,11 @@
 \import Exercises.BasicsEx (if)
 \import Exercises.EqualityProofsEx (eq-suc)
 \import Function.Meta
+\import Indexed (Empty, unit)
 \import Meta
 \import Paths (*>)
 \import Paths.Meta
+\import Proofs (absurd)
 \open Nat(+, *)
 
 -- 1. Implement any sorting algorithm using \case for pattern matching on the result of comparison of elements

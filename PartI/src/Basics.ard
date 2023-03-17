@@ -75,12 +75,12 @@
 -- Data definitions
 -------------------------------------------------
 
-\data Empty
+--\data Empty
 {- Haskell:
    data Empty
 -}
 
-\data Unit | unit
+--\data Unit | unit
 {- Haskell:
    data Unit = Unit
 -}
@@ -90,9 +90,9 @@
    data Bool = False | True
 -}
 
-\func not (x : Bool) : Bool \with -- keyword \with can be omitted
+{- \func not (x : Bool) : Bool \with -- keyword \with can be omitted
   | true => false
-  | false => true
+  | false => true -}
 {- Haskell:
    not :: Bool -> Bool
    not True = False

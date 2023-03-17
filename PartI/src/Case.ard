@@ -1,4 +1,6 @@
 \import Basics
+\import Indexed (Empty, Unit, unit)
+\import Proofs (absurd)
 \open Nat(+, *)
 
 -------------------------------------------------
@@ -73,11 +75,11 @@
 -- Proof of a fact about filter via \case
 -------------------------------------------------
 
-\data Empty
+--\data Empty
 
-\func absurd {A : \Type} (e : Empty) : A
+--\func absurd {A : \Type} (e : Empty) : A
 
-\data Unit | unit
+--\data Unit | unit
 
 \func \infix 4 <= (x y : Nat) : \Type
   | 0, _ => Unit

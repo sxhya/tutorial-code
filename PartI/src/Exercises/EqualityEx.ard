@@ -1,4 +1,6 @@
+\import Basics
 \import Equality
+\import Indexed (Empty)
 
 -- 1. Define congruence for functions with two arguments via transport.
 --    It is allowed to use any functions defined via transport.

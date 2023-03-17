@@ -1,8 +1,9 @@
+\import Basics
 -------------------------------------------------
 -- Insertion sort and reverse
 -------------------------------------------------
 
-\data Bool | false | true
+--\data Bool | false | true
 
 \data List (A : \Type) | nil | cons A (List A)
 
@@ -126,7 +127,7 @@
   | suc n => { fzero | fsuc (Fin n) }
 
 -- Fin 0 -- empty type
-\func absurd {A : \Type} (x : Fin 0) : A
+\func absurdFin0 {A : \Type} (x : Fin 0) : A
 
 \func fin0 : Fin 3 => fzero
 \func fin1 : Fin 3 => fsuc fzero

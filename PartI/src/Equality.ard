@@ -1,3 +1,5 @@
+\import Basics
+\import Indexed (Empty)
 -------------------------------------------------
 -- Symmetry, transitivity, Leibnitz principle
 -------------------------------------------------
@@ -45,7 +47,7 @@
   | inl A
   | inr B
 
-\data Empty
+--\data Empty
 
 \func lem : \Pi (X : \Type) -> Either X (X -> Empty) => {?}
 \func ugly_num : Nat => \case lem Nat \with { | Left => 0 | Right => 1 }
@@ -70,7 +72,7 @@
   | zero => z
   | suc n => s n (Nat-rec P z s n)
 
-\data Bool | false | true
+--\data Bool | false | true
 
 -- Dependent eliminator for Bool (recursor for Bool is just 'if').
 \func Bool-elim (P : Bool -> \Type)

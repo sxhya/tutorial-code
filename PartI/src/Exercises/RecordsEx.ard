@@ -1,7 +1,7 @@
 \import Equality (funExt)
 \import EqualityProofs (inv)
 \import Exercises.BasicsEx
-\import Indexed (pmap)
+\import Indexed (Empty, pmap)
 \import Meta
 \import Paths.Meta
 \import Records
@@ -33,7 +33,7 @@
 
 -- 3. Prove that the type 'PosNat 0' is empty, but the type 'PosNat 1' is not.
 
-\data Empty
+--\data Empty
 
 \func zero-isNotPos (p : PosNat 0) : Empty => \case p.p
 

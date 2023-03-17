@@ -75,7 +75,7 @@
   | suc n, fsuc a, fsuc b => finDiag a b
 
 \func diag {A : \Type} (z e : A) (n : Nat) : Mat A n n \elim n
-  | 0 => \lam (x : Fin 0) => absurd x
+  | 0 => \lam (x : Fin 0) => absurdFin0 x
   | suc n => \lam (x : Fin (suc n)) (y : Fin (suc n)) => if (finDiag x y) e z
 
 -- transposition
