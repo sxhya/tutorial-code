@@ -53,9 +53,9 @@
 
 -- \data Bool | true | false
 
-\func T (b : Bool) : \Type
+{- \func T (b : Bool) : \Type
   | true => Unit
-  | false => Empty
+  | false => Empty -}
 
 \func \infix 4 == (x y : Bool) : Bool
   | true, true => true

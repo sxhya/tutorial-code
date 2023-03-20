@@ -117,6 +117,21 @@
   | suc x, 0 => false
   | suc x, suc y => x < y
 
+\func \infix 4 <= (x y : Nat) : Bool
+  | 0, 0 => true
+  | 0, suc y => true
+  | suc x, 0 => false
+  | suc x, suc y => x <= y
+
+\func <-vs-<= (x y : Nat) : (x < suc y) = (x <= y) \elim x, y
+  | 0, 0 => idp
+  | 0, suc y => idp
+  | suc x, 0 => \case \elim x \with {
+    | 0 => idp
+    | suc x => idp
+  }
+  | suc x, suc y => <-vs-<= x y
+
 \func fin (n : Nat) => \Sigma (x : Nat) (T (x < n))
 
 \func Fin' (n : Nat) : \Set0

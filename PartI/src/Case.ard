@@ -1,5 +1,5 @@
 \import Basics
-\import Indexed (Empty, Unit, unit)
+\import Indexed (Empty, T, Unit, unit)
 \import Proofs (absurd)
 \open Nat(+, *)
 
@@ -58,11 +58,11 @@
 
 \data Ordering | LT | EQ | GT
 
-\func \infix 4 < (x y : Nat) : Bool
+{- \func \infix 4 < (x y : Nat) : Bool
   | 0, 0 => false
   | 0, suc y => true
   | suc x, 0 => false
-  | suc x, suc y => x < y
+  | suc x, suc y => x < y -}
 
 \func compare (x y : Nat) : Ordering =>
   \case x < y, y < x \with {
@@ -250,9 +250,9 @@
 -- Decidable predicates and functions
 -------------------------------------------------
 
-\func T (b : Bool) : \Type
+{-\func T (b : Bool) : \Type
   | true => Unit
-  | false => Empty
+  | false => Empty -}
 
 \func FromBoolToDec {A : \Type} (p : A -> Bool) : \Sigma (P : A -> \Type) (DecPred P)
   => (\lam a => T (p a), \lam a => \case p a \as b \return Decide (T b) \with {

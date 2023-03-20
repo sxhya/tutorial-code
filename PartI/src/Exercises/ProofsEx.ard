@@ -1,4 +1,5 @@
-\import Indexed (pmap)
+\import Basics
+\import Indexed (Empty, pmap)
 \import Proofs
 
 -- 1. Prove that (P -> Q -> R) -> (P -> Q) -> P -> S

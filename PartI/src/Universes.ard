@@ -53,11 +53,11 @@
 -------------------------------------------------
 -- Induction principles
 -------------------------------------------------
-\func \infix 4 < (x y : Nat) : Bool
+{- \func \infix 4 < (x y : Nat) : Bool
   | 0, 0 => false
   | 0, suc y => true
   | suc x, 0 => false
-  | suc x, suc y => x < y
+  | suc x, suc y => x < y -}
 
 -------------------------------------------------
 -- Induction-recusrion

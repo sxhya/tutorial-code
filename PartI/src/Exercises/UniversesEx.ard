@@ -1,6 +1,8 @@
 \import Basics (-)
-\import Indexed (Empty, T, unit)
+\import Exercises.CaseEx (mod-view)
+\import Indexed (<, <-vs-<=, <=, Empty, T, fzero, pmap, unit)
 \import Logic (byLeft, byRight, ||)
+\import Paths.Meta
 \import Universes
 \import Proofs(absurd)
 
@@ -19,15 +21,51 @@
 
 \func T<0=false {l : Nat} (a : T (l < 0)) : Empty | {0}, ()
 
---\func T-suc {m n : Nat} (p : T (m < suc n)) : T (m < n) || (m = n)
+\func T=0 {l : Nat} (a : T (l <= 0)) : l = 0 \elim l | 0 => idp | suc l => absurd a
+
+\func T-suc {n k : Nat} (A : T (k < suc n)) : T (k < n) Proofs.|| (k = n) \elim n
+  | 0 => \case \elim k, A : T (k < 1) \with {
+    | 0, unit => Proofs.inr idp
+    | suc k, t => absurd (T<0=false t)
+  }
+  | suc n => \case \elim k, A : T (k < suc (suc n)) \with {
+    | 0, A => Proofs.inl unit
+    | suc k, A1 => \case T-suc A1 \with {
+      | Proofs.inl a => Proofs.inl a
+      | Proofs.inr b => Proofs.inr (pmap suc b)
+    }
+  }
+
+\func T-suc2 {n k : Nat} (A : T (k <= suc n)) : T (k < suc n) Proofs.|| (k = suc n) => T-suc {suc n} {k} (rewrite <-vs-<= A)
+
+\func <=-refl {n : Nat} : T (n <= n) \elim n | 0 => unit | suc n => <=-refl
+
+\func Nat-ind-helper (E : Nat -> \Type)
+                     (r : \Pi (n : Nat) -> (\Pi (k : Nat) -> T (k < n) -> E k) -> E n)
+                     (n k : Nat) (A : T (k <= n)) : E k \elim n
+  | 0 => rewrite (T=0 A) (r 0 (\lam (k : Nat) (p : T (k < 0)) => absurd (T<0=false p)))
+  | suc n => \case T-suc2 A \return E k \with {
+    | Proofs.inl a => Nat-ind-helper E r n k (rewriteI <-vs-<= a)
+    | Proofs.inr b => \let result => r (suc n) (\lam k C => Nat-ind-helper E r n k (rewriteI <-vs-<= C)) \in rewrite b result
+  }
 
 \func Nat-ind (E : Nat -> \Type)
               (r : \Pi (n : Nat) -> (\Pi (k : Nat) -> T (k < n) -> E k) -> E n)
-              (n : Nat) : E n \elim n
-  | 0 => r 0 (\lam (k : Nat) (p : T (k < 0)) => absurd (T<0=false p))
-  | suc n => {?}
+              (n : Nat) : E n => Nat-ind-helper E r n n <=-refl
 
-\func div (n k : Nat) (p : T (0 < k)) : Nat => \let NI => Nat-ind (\lam _ => Nat) (\lam k2 f => \let X => f (k2 - k) \in {?}) \in {?}
+\func <-suc {n k : Nat} (A : T (n < k)) : T (n < suc k) | {0}, {suc k}, unit => unit | {suc n}, {suc k}, A => <-suc A
+
+\func n<sucn {n : Nat} : T (n < suc n) | {0} => unit | {suc n} => n<sucn
+
+\func sum (n : Nat) (f : \Pi (k : Nat) -> T (k < n) -> Nat) : Nat
+  | 0, f => 1
+  | suc n, f => f n n<sucn Nat.+ sum n (\lam k A => f k (<-suc A))
+
+\func sum2 (n : Nat) => sum n (\lam k A => k)
+\func foo (n : Nat) : Nat =>
+  Nat-ind (\lam _ => Nat) {?}  n
+
+\func div (n k : Nat) (p : T (0 < k)) : Nat => {?}
 
 -- 3. Prove the following induction principle for lists:
 

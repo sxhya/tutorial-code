@@ -105,7 +105,7 @@
 -- \data Bool | true | false
 
 -- compare this definition of T with the one in module Basics
-\data T (b : Bool) \with
+ \data T (b : Bool) \with
   | true => tt
 
 \func isPos (n : Nat) : Bool

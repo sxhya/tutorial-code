@@ -1,3 +1,4 @@
+\import Basics (Bool, false, true)
 \import Indexed
 
 -- 1. Implement the function 'lookup', which takes a list and a natural number n and returns the n-th element in the list.

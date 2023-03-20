@@ -104,13 +104,13 @@
 -- Proofs of non-equalities
 -------------------------------------------------
 
-\data Unit | unit
+--\data Unit | unit
 
-\func T (b : Bool) : \Type
+{- \func T (b : Bool) : \Type
   | true => Unit
-  | false => Empty
+  | false => Empty -}
 
-\func true/=false (p : true = false) : Empty => transport T p unit
+--\func true/=false (p : true = false) : Empty => transport T p unit
 
 -- This function does not typecheck!
 {-
