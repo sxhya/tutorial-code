@@ -163,8 +163,8 @@
 -- \func theorem : 0 = 1 => theorem
 
 \func \infixl 6 - (x y : Nat) : Nat
-  | 0, _ => 0
-  | suc x, 0 => suc x
+  | x, 0 => x
+  | 0, suc y => 0
   | suc x, suc y => x - y
 
 \func \infix 4 < (x y : Nat) : Bool
