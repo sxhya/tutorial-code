@@ -1,8 +1,12 @@
-\import Basics (-)
-\import Indexed (<, Empty, T, pmap, unit)
+\import Basics (-, Bool, true, false)
+\import Exercises.EqualityProofsEx (EmptySublist, List, SkipSubList, SubList, TakeSublist, filter, cons, nil)
+\import Function.Meta
+\import Indexed (<, Empty, T, Unit, if, pmap, unit)
+\import Meta
 \import Paths (inv, transport)
+\import Paths.Meta
 \import Universes
-\import Proofs(absurd, inl, inr, ||)
+\import Proofs (absurd, inl, inr, ||)
 
 -- 1. Calculate levels in each of the the invocations of 'id''' below.
 --    Specify explicitly result types for all idTest*.
@@ -10,14 +14,19 @@
 \func id'' {A : \Type} (a : A) => a
 
 \func idTest1 : \Pi (A : \Type \lp) -> A -> A => id'' (id'' id)
+
 \func idTest2 : \Type \lp -> \Type \lp => id'' Maybe
+
 \func idTest3 : \Type (\suc \lp) => id'' Functor
+
 \func idTest4 : \Type (\suc \lp) => id'' (Functor Maybe)
+
 \func idTest5 (f : \Pi {A B : \Set} -> (A -> B) -> Maybe A -> Maybe B) : \Type \lp => id'' (Functor Maybe f)
 
 -- 2. Define 'div' via 'Nat-ind'.
 
 \func T<0=false {l : Nat} (a : T (l < 0)) : Empty | {0}, ()
+
 \func Nat-ind-helper (E : Nat -> \Type)
                      (r : \Pi (n : Nat) -> (\Pi (k : Nat) -> T (k < n) -> E k) -> E n)
                      {n k : Nat} (A : T (k < suc n)) : E k \elim n
@@ -43,6 +52,7 @@
         }
       }
   }
+
 \func Nat-ind (E : Nat -> \Type)
               (r : \Pi (n : Nat) -> (\Pi (k : Nat) -> T (k < n) -> E k) -> E n)
               (n : Nat) : E n => Nat-ind-helper E r n<sucn
@@ -69,6 +79,7 @@
 
   \func n<sucn {n : Nat} : T (n < suc n) | {0} => unit | {suc n} => n<sucn
 }
+
 \func div (n k : Nat) (p : T (0 < k)) : Nat => Nat-ind (\lam _ => Nat) (\lam n f => \case n-k<n n k p \with {
   | inl p1 => \case n < k \with {
     | true => 0
@@ -79,7 +90,7 @@
 
 -- 3. Prove the following induction principle for lists:
 
-\func length {A : \Type} (xs : List A) : Nat
+\func length {A : \Type} (xs : List A) : Nat \elim xs
   | nil => 0
   | cons _ xs => suc (length xs)
 
@@ -87,9 +98,51 @@
   {A : \Type}
   (E : List A -> \Type)
   (r : \Pi (xs : List A) -> (\Pi (ys : List A) -> T (length ys < length xs) -> E ys) -> E xs)
-  (xs : List A) : E xs => {?}
+  (xs : List A) : E xs => List-ind-helper E r {length xs} {xs} n<sucn
+
+\func List-ind-helper {A : \Type} (E : List A -> \Type)
+                      (r : \Pi (xs : List A) -> (\Pi (ys : List A) -> T (length ys < length xs) -> E ys) -> E xs)
+                      {n : Nat} {ys : List A} (B : T (length ys < suc n)) : E ys \elim n
+  | 0 => \case \elim ys, B \with {
+    | nil, _ => r nil (\lam k A => absurd (T<0=false A))
+    | cons y ys, A => absurd (T<0=false A)
+  }
+  | suc n => \case ys \as yss, Nat-ind-helper.T-suc B : T (length yss < suc n) || (length yss = suc n) \return E yss \with {
+    | ys, inl p => List-ind-helper E r p
+    | cons y ys, inr q => r (cons y ys) (\lam zs B => List-ind-helper E r {n} {zs} (transport (\lam x => T (length zs < x)) q B))
+    | nil, inr q => \case q
+  }
 
 -- 4. Implement function 'filter' and prove that it is correct, that is that the following holds:
 --    * 'filter p xs' is a sublist of 'xs'
 --    * All elements of 'filter p xs' satisfy the predicate 'p'
 --    * Any sublist of 'xs' with this property is a sublist of 'filter p xs'
+
+\func filterIsASublist {A : \Type} {P : A -> Bool} (xs : List A) : SubList (filter P xs) xs \elim xs
+  | nil => EmptySublist
+  | cons a xs => \case P a \as pa \return SubList (if pa (cons a (filter P xs)) (filter P xs)) (cons a xs) \with {
+    | true => TakeSublist idp (filterIsASublist xs)
+    | false => SkipSubList (filterIsASublist xs)
+  }
+
+\func forall {B : \Type} (P : B -> Bool) (xs : List B) : \Prop \elim xs
+  | Exercises.EqualityProofsEx.nil => Unit
+  | cons a xs => \Sigma (T (P a)) (forall P xs)
+
+\func filterAreFiltered {A : \Type} {P : A -> Bool} (xs : List A) : forall {A} P (filter P xs) \elim xs
+  | nil => unit
+  | cons a xs => \case P a \as Pa, idp : P a = Pa \return forall {A} P (if {List A} Pa (cons {A} a (filter {A} P xs)) (filter {A} P xs)) \with {
+    | false, _ => filterAreFiltered {A} {P} xs
+    | true, A0 => rewrite A0 (unit, filterAreFiltered {A} {P} xs)
+  }
+\func filteredUniversality {A : \Type} (P : A -> Bool) (xs ys : List A) :
+  forall {A} P ys -> SubList ys xs -> SubList ys (filter P xs)
+  | P, nil, nil => \lam A B => EmptySublist
+  | P, nil, cons a ys => \lam A B => \case B
+  | P, cons a xs, nil => \lam A B => EmptySublist
+  | P, cons x xs, cons y ys => \lam A B => \case B, P x \as Px, idp : P x = Px \return SubList (cons y ys) (if Px (cons x (filter P xs)) (filter P xs)) \with {
+    | SkipSubList s, false, _ => filteredUniversality P xs (cons y ys) A s
+    | SkipSubList s, true, C => SkipSubList (filteredUniversality P xs (cons y ys) A s)
+    | TakeSublist p s, false, C => rewriteI p at C $ rewrite C at A $ absurd A.1
+    | TakeSublist p s, true, _ => TakeSublist p (filteredUniversality P xs ys A.2 s)
+  }

@@ -87,7 +87,7 @@
   | list Type
   | arr Type Type
 
-\data List (A : \Type) | nil | cons A (List A)
+--\data List (A : \Type) | nil | cons A (List A)
 
 \func El (t : Type) : \Set0 \elim t -- \Set0 is almost the same as \Type0, we will discuss the difference later
   | nat => Nat
